@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using UnityEngine;
 
 public class PlayerStateProperties
@@ -13,7 +14,6 @@ public class PlayerStateProperties
         Player = player;
         StateMachine = stateMachine;
         AnimBoolName = animBoolName;
-        
     }
 }
 public class BasePlayerState : IPlayer
@@ -27,11 +27,14 @@ public class BasePlayerState : IPlayer
     protected bool isButtonPressed = true;
     protected bool iscrouch = false;
     private bool isHit;
+    protected bool isPlayer;
+    protected Vector3 playerPos;
     public BasePlayerState(PlayerStateProperties properties, float time)
     {
         this.properties = properties;
         Rigidbody = this.properties.Player.rb;
         this.animTime = time;
+        isPlayer = properties.Player.isPlayer;
     }
 
     public virtual void enter()
@@ -46,85 +49,87 @@ public class BasePlayerState : IPlayer
     }
 
     public virtual void update()
-    {
-        if (isMoving == true) 
-        {
-         inputX = Input.GetAxis("Horizontal");
-         inputY = Input.GetAxis("Vertical");
+    { 
+        if(isPlayer == true)
+        {   
+            playerPos = properties.Player.transform.position;
+            MovementVoid();
+            playerIdleCombatState();
+            PlayerMoveCombatState();
         }
        
+    }
+    private void MovementVoid()
+    {
+        if (isMoving == true)
+        {
+            inputX = Input.GetAxis("Horizontal");
+            inputY = Input.GetAxis("Vertical");
+        }
+
 
         if (inputX != 0 && isHit == false)
         {
             properties.StateMachine.ChangeState(properties.Player.moveState);
         }
-        if (inputY < 0) 
+        if (inputY < 0)
         {
             properties.StateMachine.ChangeState(properties.Player.playerCrouch);
             iscrouch = true;
         }
-        if(inputY > 0 && iscrouch == true)
+        if (inputY > 0 && iscrouch == true)
         {
             exit();
             properties.StateMachine.ChangeState(properties.Player.playerIdle);
-            iscrouch= false;
+            iscrouch = false;
         }
-        playerIdleCombatState();
-        PlayerMoveCombatState();
     }
-
     protected void playerIdleCombatState()
     {
-        if (Input.GetKeyDown(KeyCode.P) || Input.GetKeyDown(KeyCode.Joystick1Button2))
-        {
-            properties.StateMachine.ChangeState(properties.Player.lowpunchState);
-        }
-        if (Input.GetKeyDown(KeyCode.O) || Input.GetKeyDown(KeyCode.Joystick1Button3))
-        {
-            properties.StateMachine.ChangeState(properties.Player.playerhighpunch);
-        }
-        if (Input.GetKeyDown(KeyCode.K) || Input.GetKeyDown(KeyCode.Joystick1Button1))
-        {
-            properties.StateMachine.ChangeState(properties.Player.playerKick);
-        }
-        if (Input.GetKeyDown(KeyCode.L) || Input.GetKeyDown(KeyCode.Joystick1Button0))
-        {
-            properties.StateMachine.ChangeState(properties.Player.playerHighKick);
-        }
-        if (Input.GetKeyDown(KeyCode.P) && Input.GetKeyDown(KeyCode.O) || Input.GetKeyDown(KeyCode.Joystick1Button2)
-                && Input.GetKeyDown(KeyCode.Joystick1Button3))
-        {
-            properties.StateMachine.ChangeState(properties.Player.punchCombo);
-        }
-        if (Input.GetKeyDown(KeyCode.K) && Input.GetKeyDown(KeyCode.L) || Input.GetKeyDown(KeyCode.Joystick1Button1) &&
-              Input.GetKeyDown(KeyCode.Joystick1Button0))
-        {
-            properties.StateMachine.ChangeState(properties.Player.playerKickCombo);
-        }
+        var Player = properties.Player;
+        //Punches
+        HandleButtonInput(KeyCode.P, KeyCode.Joystick1Button2, Player.lowpunchState);
+        HandleButtonInput(KeyCode.O, KeyCode.Joystick1Button3, Player.playerhighpunch);
+        HandleComboButton(KeyCode.P, KeyCode.O, Player.punchCombo);
+        HandleButtonInput(KeyCode.T, KeyCode.Joystick1Button5, Player.playerTaunt);
+        HandleButtonInput(KeyCode.G, KeyCode.Joystick1Button4, Player.playerGrapple);
+        HandleComboButton(KeyCode.Joystick1Button3, KeyCode.Joystick1Button2, Player.playerWindKick);
+        //PlayerKicks
+        HandleButtonInput(KeyCode.L, KeyCode.Joystick1Button0, Player.playerHighKick);
+        HandleButtonInput(KeyCode.K, KeyCode.Joystick1Button1, Player.playerKick);
+        HandleComboButton(KeyCode.K, KeyCode.L, Player.playerKickCombo);
+        HandleComboButton(KeyCode.Joystick1Button1, KeyCode.Joystick1Button0, Player.playerKickCombo);
     }
+
     protected void PlayerMoveCombatState()
     {
-        if (inputX > 0 && (Input.GetKeyDown(KeyCode.L) || Input.GetKeyDown(KeyCode.Joystick1Button0)))
+        var Player = properties.Player;
+        MoveButtonInput(inputX, KeyCode.L, KeyCode.Joystick1Button0, Player.dropKick);
+        MoveButtonInput(inputX, KeyCode.K, KeyCode.Joystick1Button1, Player.stompKick);
+        if (iscrouch == false)
         {
-            properties.StateMachine.ChangeState(properties.Player.dropKick);
+            MoveButtonInput(inputY, KeyCode.L, KeyCode.Joystick1Button0, Player.playerWindKick);
         }
-        if (inputX > 0 && (Input.GetKeyDown(KeyCode.K) || Input.GetKeyDown(KeyCode.Joystick1Button1)))
+    }
+    protected void MoveButtonInput(float input, KeyCode keyCode, KeyCode keyCode1, IPlayer stateName)
+    {
+        if ((input > 0 && Input.GetKeyDown(keyCode) || Input.GetKeyDown(keyCode1)))
         {
-            properties.StateMachine.ChangeState(properties.Player.stompKick);
+            properties.StateMachine.ChangeState(stateName);
         }
-
-        if (Input.GetKeyDown(KeyCode.T) || (Input.GetKeyDown(KeyCode.Joystick1Button5)))
+    }
+    protected void HandleButtonInput(KeyCode key, KeyCode key1, IPlayer stateName)
+    {
+        if (Input.GetKeyDown(key) || Input.GetKeyDown(key1))
         {
-            properties.StateMachine.ChangeState(properties.Player.playerTaunt);
+            properties.StateMachine.ChangeState(stateName);
         }
-        if (Input.GetKeyDown(KeyCode.G) || (Input.GetKeyDown(KeyCode.Joystick1Button4)))
+    }
+    protected void HandleComboButton(KeyCode key, KeyCode key1, IPlayer stateName)
+    {
+        if (Input.GetKeyDown(key) && Input.GetKeyDown(key1))
         {
-            properties.StateMachine.ChangeState(properties.Player.playerGrapple);
+            properties.StateMachine.ChangeState(stateName);
         }
-        if (inputY > 0 && Input.GetKeyDown(KeyCode.Joystick1Button0) && iscrouch == false)
-        {
-            properties.StateMachine.ChangeState(properties.Player.playerWindKick);
-        }
-
     }
 }

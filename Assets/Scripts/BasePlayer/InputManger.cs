@@ -14,10 +14,10 @@ public class InputManger : MonoBehaviour
     private int count = 0;
     private float timeCounter = 0f;
     private bool isPlaying = true;
-    BasePlayer player;
+    ModiPlayer player;
     private void Awake()
     {
-        player = GetComponent<BasePlayer>();
+        player = GetComponent<ModiPlayer>();
     }
     void Update()
     {

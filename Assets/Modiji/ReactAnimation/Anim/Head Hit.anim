@@ -33182,3 +33182,10 @@ AnimationClip:
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
+  - time: 0.033333335
+    functionName: playHitSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: e56441b06ae2ea0498745c2d1db7340b, type: 3}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0

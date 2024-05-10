@@ -4,20 +4,38 @@ using UnityEngine;
 
 public class OnChestHit : MonoBehaviour
 {  
-    BasePlayer player;
-    [SerializeField] GameObject hitparticle;
+    private BasePlayer player;
+    private bool isPlay;
+    private bool isTrigger;
     private void Awake()
     {
-        player = GetComponentInParent<BasePlayer>();
+        player = GetComponentInParent<ModiPlayer>();
+    }
+    private void OnEnable()
+    {
+        SignalManager.Instance.Subscribe<OnHitPlayer1Signal>(chestChit);
+    }
+    private void OnDisable()
+    {
+        SignalManager.Instance.Unsubscribe<OnHitPlayer1Signal>(chestChit);
     }
     private void OnTriggerEnter(Collider other)
     {
-        if(other.gameObject.tag == "Player1")
+        if(other.gameObject.tag == "Player1" || other.gameObject.tag == "Player")
         {
-            Debug.Log("ChestHit");
-            player.ishit = true;
-         //   Instantiate(hitparticle, transform.position, Quaternion.identity);
-            player.stateMachine.ChangeState(player.stomachHitState);
+          isTrigger = true;
         }
+    }
+    private void chestChit(OnHitPlayer1Signal notify)
+    {
+        isPlay = notify.isStomachHit;
+        if (isPlay == true && isTrigger == true)
+        {
+            player.ishit = true;
+            player.stateMachine.ChangeState(player.stomachHitState);
+          
+        }
+        isPlay = false;
+        isTrigger = false;
     }
 }

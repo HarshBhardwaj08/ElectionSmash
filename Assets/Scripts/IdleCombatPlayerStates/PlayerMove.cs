@@ -4,13 +4,19 @@ using UnityEngine;
 
 public class PlayerMove : PlayerGroundedState
 {
+    float highkicktime;
+    float highKickIntialTime;
     public PlayerMove(PlayerStateProperties properties, float time) : base(properties, time)
     {
+        this.highKickIntialTime = time;
+        this.highkicktime = time;
     }
 
     public override void enter()
     {
         base.enter();
+        if(isPlayer == false)
+        properties.Player.move(2);
     }
 
     public override void exit()
@@ -21,10 +27,18 @@ public class PlayerMove : PlayerGroundedState
     public override void update()
     {
         base.update();
-        properties.Player.move(inputX * -1);
-        if (inputX == 0)
+        if(isPlayer == true)
         {
-            properties.StateMachine.ChangeState(properties.Player.playerIdle);
+            properties.Player.move(inputX);
+            if (inputX == 0)
+            {
+                properties.StateMachine.ChangeState(properties.Player.playerIdle);
+            }
         }
+        if(isPlayer == false) 
+        {
+           
+        }
+  
     }
 }

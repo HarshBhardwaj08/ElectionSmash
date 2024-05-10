@@ -99360,4 +99360,18 @@ AnimationClip:
     flags: 0
   m_HasGenericRootTransform: 0
   m_HasMotionFloatCurves: 0
-  m_Events: []
+  m_Events:
+  - time: 0
+    functionName: LegHitEffect
+    data: 
+    objectReferenceParameter: {fileID: 8443315704496310910, guid: 6ef35fa36e3a65043b2d800600204bdd, type: 3}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 0.06666667
+    functionName: playHitSound
+    data: 
+    objectReferenceParameter: {fileID: 8300000, guid: 1405ac507651d2e42bed6497c9267d93, type: 3}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
